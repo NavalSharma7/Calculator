@@ -7,13 +7,21 @@ import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
 
+import com.google.android.material.snackbar.Snackbar;
+
 public class MainActivity extends AppCompatActivity {
 
 
     //member variables
     private EditText resultEditText;
     private Button btn1, btn2, btn3, btn4, btn5, btn6, btn7, btn8, btn9, btn0;
-    private Button clearBtn, decimalBtn,addBtn,subBtn,multBtn,divBtn,equalsBtn;
+    private Button clearBtn, decimalBtn, addBtn, subBtn, multBtn, divBtn, equalsBtn;
+
+    private CurrentOperation currentOperationEnum;
+    private boolean decimalPresent = false;
+
+    private float value1, value2;
+    private  boolean clearRequired = false;
 
 
     @Override
@@ -118,7 +126,10 @@ public class MainActivity extends AppCompatActivity {
         decimalBtn.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                resultEditText.setText(resultEditText.getText() + ".");
+                if (!decimalPresent) {
+                    resultEditText.setText(resultEditText.getText() + ".");
+                    decimalPresent = true;
+                }
             }
         });
 
@@ -126,36 +137,130 @@ public class MainActivity extends AppCompatActivity {
             @Override
             public void onClick(View v) {
                 resultEditText.setText("");
+                decimalPresent = false;
             }
         });
 
         addBtn.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
+                if(clearRequired){
+                    Snackbar.make(v,"Use CLear or equals first",Snackbar.LENGTH_LONG).show();
+                    return;
+                }
+                String in = resultEditText.getText().toString();
+                value1 = Float.parseFloat(in);
+                currentOperationEnum = CurrentOperation.ADDITION;
+                decimalPresent = false;
+
                 resultEditText.setText(resultEditText.getText() + "+");
+                clearRequired = true;
             }
         });
 
         subBtn.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
+                if(clearRequired){
+                    Snackbar.make(v,"Use CLear or equals first",Snackbar.LENGTH_LONG).show();
+                    return;
+                }
+                String in = resultEditText.getText().toString();
+                value1 = Float.parseFloat(in);
+                currentOperationEnum = CurrentOperation.SUBTRACTION;
+                decimalPresent = false;
                 resultEditText.setText(resultEditText.getText() + "-");
+                clearRequired = true;
             }
         });
 
         multBtn.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
+                if(clearRequired){
+                    Snackbar.make(v,"Use CLear or equals first",Snackbar.LENGTH_LONG).show();
+                    return;
+                }
+                String in = resultEditText.getText().toString();
+                value1 = Float.parseFloat(in);
+                currentOperationEnum = CurrentOperation.MULTIPLICATION;
+                decimalPresent = false;
                 resultEditText.setText(resultEditText.getText() + "*");
+                clearRequired = true;
             }
         });
 
         divBtn.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
+                if(clearRequired){
+                    Snackbar.make(v,"Use CLear or equals first",Snackbar.LENGTH_LONG).show();
+                    return;
+                }
+                String in = resultEditText.getText().toString();
+                value1 = Float.parseFloat(in);
+                currentOperationEnum = CurrentOperation.DIVISION;
+                decimalPresent = false;
                 resultEditText.setText(resultEditText.getText() + "/");
+                clearRequired = true;
             }
         });
+        equalsBtn.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                String expression = resultEditText.getText().toString();
+                value2 = getSecondValue(expression);
+                float result = evaluateExpression(value1, value2, currentOperationEnum);
+                resultEditText.setText(String.format("%s", result));
+                clearRequired = false;
+            }
+        });
+    }
 
+    private float evaluateExpression(float input1, float input2, CurrentOperation operation) {
+        float result = 0f;
+        switch (operation) {
+            case ADDITION:
+                result = input1 + input2;
+                break;
+            case SUBTRACTION:
+                result = input1 - input2;
+                break;
+            case MULTIPLICATION:
+                result = input1 * input2;
+                break;
+            case DIVISION:
+                result = input1 / input2;
+                break;
+        }
+        return result;
+    }
+
+    private float getSecondValue(String expression) {
+        String operation = "";
+
+        switch (currentOperationEnum) {
+            case DIVISION:
+                operation = "/";
+                break;
+            case SUBTRACTION:
+                operation = "-";
+                break;
+            case ADDITION:
+                operation = "\\+";
+                break;
+            case MULTIPLICATION:
+                operation = "\\*";
+                break;
+            default:
+                operation = "";
+
+        }
+        String[] vals = expression.split(operation);
+        if (vals.length >= 2) {
+            float secondVal = Float.parseFloat(vals[1]);
+            return secondVal;
+        }
+        return 0;
     }
 }
