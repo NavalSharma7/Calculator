@@ -1,8 +1,13 @@
 package com.example.calculator;
 
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.core.app.NavUtils;
+import androidx.core.content.ContextCompat;
 
+import android.app.ActionBar;
+import android.graphics.drawable.ColorDrawable;
 import android.os.Bundle;
+import android.text.TextUtils;
 import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
@@ -22,7 +27,7 @@ public class MainActivity extends AppCompatActivity {
     // boolean to decide weather to let user enter another decimal or not.
     private boolean decimalPresent = false;
     // the two values or operands.
-    private float value1, value2;
+    private double value1, value2;
 
     // boolean to check weather user pressed equals or clear
     // before entering multiple operators in expression
@@ -142,12 +147,7 @@ public class MainActivity extends AppCompatActivity {
         clearBtn.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                //clear th variables when clear button is pressed.
-                resultEditText.setText("");
-                decimalPresent = false;
-                clearRequired = false;
-                value1 = 0;
-                value2 = 0;
+                onClickClear();
             }
         });
 
@@ -157,18 +157,10 @@ public class MainActivity extends AppCompatActivity {
                 //check if clear is required (if the user is trying to enter multiple operators
                 // in the expression)
                 if (clearRequired) {
-                    Snackbar.make(v, "Use Clear or equals first", Snackbar.LENGTH_LONG).show();
+                    showSnackBar(v);
                     return;
                 }
-                String in = resultEditText.getText().toString();
-                value1 = Float.parseFloat(in);
-                currentOperationEnum = CurrentOperation.ADDITION;
-                //change  boolean to false as a new value will be entered. decimal is allowed now
-                decimalPresent = false;
-
-                resultEditText.setText(resultEditText.getText() + "+");
-                // change boolean that a clear/equals is required now before entering more operators
-                clearRequired = true;
+                onClickAddition();
             }
         });
 
@@ -178,19 +170,10 @@ public class MainActivity extends AppCompatActivity {
                 //check if clear is required (if the user is trying to enter multiple operators
                 // in the expression)
                 if (clearRequired) {
-                    Snackbar.make(v, "Use Clear or equals first", Snackbar.LENGTH_LONG).show();
+                    showSnackBar(v);
                     return;
                 }
-                String in = resultEditText.getText().toString();
-                value1 = Float.parseFloat(in);
-                currentOperationEnum = CurrentOperation.SUBTRACTION;
-                //change  boolean to false as a new value will be entered. decimal is allowed now
-
-                decimalPresent = false;
-                resultEditText.setText(resultEditText.getText() + "-");
-                // change boolean that a clear/equals is required now before entering more operators
-
-                clearRequired = true;
+                onClickSubtract();
             }
         });
 
@@ -200,19 +183,10 @@ public class MainActivity extends AppCompatActivity {
                 //check if clear is required (if the user is trying to enter multiple operators
                 // in the expression)
                 if (clearRequired) {
-                    Snackbar.make(v, "Use Clear or equals first", Snackbar.LENGTH_LONG).show();
+                    showSnackBar(v);
                     return;
                 }
-                String in = resultEditText.getText().toString();
-                value1 = Float.parseFloat(in);
-                currentOperationEnum = CurrentOperation.MULTIPLICATION;
-                //change  boolean to false as a new value will be entered. decimal is allowed now
-
-                decimalPresent = false;
-                resultEditText.setText(resultEditText.getText() + "*");
-                // change boolean that a clear/equals is required now before entering more operators
-
-                clearRequired = true;
+                onClickMultiply();
             }
         });
 
@@ -222,42 +196,122 @@ public class MainActivity extends AppCompatActivity {
                 //check if clear is required (if the user is trying to enter multiple operators
                 // in the expression)
                 if (clearRequired) {
-                    Snackbar.make(v, "Use Clear or equals first", Snackbar.LENGTH_LONG).show();
+                    showSnackBar(v);
                     return;
                 }
-                String in = resultEditText.getText().toString();
-                value1 = Float.parseFloat(in);
-                currentOperationEnum = CurrentOperation.DIVISION;
-                //change  boolean to false as a new value will be entered. decimal is allowed now
-
-                decimalPresent = false;
-                resultEditText.setText(resultEditText.getText() + "/");
-                // change boolean that a clear/equals is required now before entering more operators
-                clearRequired = true;
+                onClickDivide();
             }
         });
         equalsBtn.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                String expression = resultEditText.getText().toString();
-                // call function to get the second value from the expression.
-                if(currentOperationEnum == null){
-                    resultEditText.setText(resultEditText.getText());
-                    return;
-                }
-                value2 = getSecondValue(expression);
-                float result = evaluateExpression(value1, value2, currentOperationEnum);
-                resultEditText.setText(String.format("%s", result));
-                // decimal cannot be further added as result is float ..
-                decimalPresent = true;
-                // no clear required as the result is shown.
-                clearRequired = false;
+                onClickEquals(v);
             }
         });
     }
 
-    private float evaluateExpression(float input1, float input2, CurrentOperation operation) {
-        float result = 0f;
+
+    private void onClickClear() {
+        //clear th variables when clear button is pressed.
+        resultEditText.setText("");
+        decimalPresent = false;
+        clearRequired = false;
+        value1 = 0;
+        value2 = 0;
+    }
+
+    private void onClickEquals(View v) {
+        String expression = resultEditText.getText().toString();
+        // call function to get the second value from the expression.
+        if (currentOperationEnum == null) {
+            resultEditText.setText(resultEditText.getText());
+            return;
+        }
+        value2 = getSecondValue(expression);
+        if (value2 == 0) {
+            if (currentOperationEnum == CurrentOperation.DIVISION) {
+                resultEditText.setText("0");
+                Snackbar.make(v, "Cannot divide by 0", Snackbar.LENGTH_LONG).show();
+                return;
+            } else {
+                resultEditText.setText(resultEditText.getText());
+                return;
+            }
+        }
+        double result = evaluateExpression(value1, value2, currentOperationEnum);
+        resultEditText.setText(String.format("%s", result));
+        // decimal cannot be further added as result is double ..
+        decimalPresent = true;
+        // no clear required as the result is shown.
+        clearRequired = false;
+        value1 = 0;
+        value2 = 0;
+    }
+
+    private void onClickDivide() {
+        String in = resultEditText.getText().toString();
+        if (TextUtils.isEmpty(in)) {
+            return;
+        }
+        value1 = Double.parseDouble(in);
+        currentOperationEnum = CurrentOperation.DIVISION;
+        //change  boolean to false as a new value will be entered. decimal is allowed now
+
+        decimalPresent = false;
+        resultEditText.setText(resultEditText.getText() + "/");
+        // change boolean that a clear/equals is required now before entering more operators
+        clearRequired = true;
+    }
+
+    private void onClickMultiply() {
+        String in = resultEditText.getText().toString();
+        if (TextUtils.isEmpty(in)) {
+            return;
+        }
+        value1 = Double.parseDouble(in);
+        currentOperationEnum = CurrentOperation.MULTIPLICATION;
+        //change  boolean to false as a new value will be entered. decimal is allowed now
+
+        decimalPresent = false;
+        resultEditText.setText(resultEditText.getText() + "*");
+        // change boolean that a clear/equals is required now before entering more operators
+
+        clearRequired = true;
+    }
+
+    private void onClickSubtract() {
+        String in = resultEditText.getText().toString();
+        if (TextUtils.isEmpty(in)) {
+            return;
+        }
+        value1 = Double.parseDouble(in);
+        currentOperationEnum = CurrentOperation.SUBTRACTION;
+        //change  boolean to false as a new value will be entered. decimal is allowed now
+
+        decimalPresent = false;
+        resultEditText.setText(resultEditText.getText() + "-");
+        // change boolean that a clear/equals is required now before entering more operators
+
+        clearRequired = true;
+    }
+
+    private void onClickAddition() {
+        String in = resultEditText.getText().toString();
+        if (TextUtils.isEmpty(in)) {
+            return;
+        }
+        value1 = Double.parseDouble(in);
+        currentOperationEnum = CurrentOperation.ADDITION;
+        //change  boolean to false as a new value will be entered. decimal is allowed now
+        decimalPresent = false;
+
+        resultEditText.setText(resultEditText.getText() + "+");
+        // change boolean that a clear/equals is required now before entering more operators
+        clearRequired = true;
+    }
+
+    private double evaluateExpression(double input1, double input2, CurrentOperation operation) {
+        double result = 0f;
         // calculate the result based on the inputs and the current operation.
         switch (operation) {
             case ADDITION:
@@ -276,12 +330,12 @@ public class MainActivity extends AppCompatActivity {
         return result;
     }
 
-    private float getSecondValue(String expression) {
+    private double getSecondValue(String expression) {
         String operation = "";
         // splitting the expression in the basis of the current operator
         // and returning the second value from the expression.
-        if(currentOperationEnum == null){
-            return  0f;
+        if (currentOperationEnum == null) {
+            return 0f;
         }
         switch (currentOperationEnum) {
             case DIVISION:
@@ -302,9 +356,21 @@ public class MainActivity extends AppCompatActivity {
         }
         String[] values = expression.split(operation);
         if (values.length >= 2) {
-            float secondVal = Float.parseFloat(values[1]);
+            double secondVal = Double.parseDouble(values[1]);
             return secondVal;
         }
         return 0;
+    }
+
+    private void showSnackBar(View v) {
+        Snackbar.make(v, R.string.clear_message, Snackbar.LENGTH_LONG)
+                .setAction(R.string.clearLabel, new View.OnClickListener() {
+                    @Override
+                    public void onClick(View view) {
+                        onClickClear();
+                    }
+                })
+                .setActionTextColor(ContextCompat.getColor(getApplicationContext(), android.R.color.white))
+                .show();
     }
 }
