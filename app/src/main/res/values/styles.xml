@@ -1,5 +1,5 @@
 <resources>
-    <!-- ActionButtonStyle for keys "CLEAR" and "/". -->
+    <!-- ActionButtonStyle for keys "CLEAR" and "." -->
     <style name="ActionButtonStyle">
         <item name="android:layout_width">0dp</item>
         <item name="android:layout_height">match_parent</item>
@@ -35,7 +35,7 @@
         <item name="android:layout_margin">0.5dp</item>
     </style>
 
-    <!-- NumberActionButton2 for keys "*", "-", "+". -->
+    <!-- NumberActionButton2 for keys "*", "-", "+". "/" -->
     <style name="NumberActionButton2">
         <item name="android:layout_width">0dp</item>
         <item name="android:layout_height">match_parent</item>

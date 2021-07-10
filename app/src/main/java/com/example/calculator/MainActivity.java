@@ -230,7 +230,7 @@ public class MainActivity extends AppCompatActivity {
         value2 = getSecondValue(expression);
         if (value2 == 0) {
             if (currentOperationEnum == CurrentOperation.DIVISION) {
-                resultEditText.setText("0");
+                resultEditText.setText(resultEditText.getText());
                 Snackbar.make(v, "Cannot divide by 0", Snackbar.LENGTH_LONG).show();
                 return;
             } else {
@@ -258,7 +258,7 @@ public class MainActivity extends AppCompatActivity {
         //change  boolean to false as a new value will be entered. decimal is allowed now
 
         decimalPresent = false;
-        resultEditText.setText(resultEditText.getText() + "/");
+        resultEditText.setText(resultEditText.getText() + getResources().getString(R.string.btn_divide));
         // change boolean that a clear/equals is required now before entering more operators
         clearRequired = true;
     }
@@ -273,7 +273,7 @@ public class MainActivity extends AppCompatActivity {
         //change  boolean to false as a new value will be entered. decimal is allowed now
 
         decimalPresent = false;
-        resultEditText.setText(resultEditText.getText() + "*");
+        resultEditText.setText(resultEditText.getText() + getResources().getString(R.string.btn_multiply));
         // change boolean that a clear/equals is required now before entering more operators
 
         clearRequired = true;
@@ -289,7 +289,7 @@ public class MainActivity extends AppCompatActivity {
         //change  boolean to false as a new value will be entered. decimal is allowed now
 
         decimalPresent = false;
-        resultEditText.setText(resultEditText.getText() + "-");
+        resultEditText.setText(resultEditText.getText() + getResources().getString(R.string.btn_minus));
         // change boolean that a clear/equals is required now before entering more operators
 
         clearRequired = true;
@@ -305,7 +305,7 @@ public class MainActivity extends AppCompatActivity {
         //change  boolean to false as a new value will be entered. decimal is allowed now
         decimalPresent = false;
 
-        resultEditText.setText(resultEditText.getText() + "+");
+        resultEditText.setText(resultEditText.getText() + getResources().getString(R.string.btn_plus));
         // change boolean that a clear/equals is required now before entering more operators
         clearRequired = true;
     }
@@ -327,6 +327,8 @@ public class MainActivity extends AppCompatActivity {
                 result = input1 / input2;
                 break;
         }
+        // round the result to 4 decimal places...
+        result = (double)Math.round(result * 10000d) / 10000d;
         return result;
     }
 
@@ -339,7 +341,7 @@ public class MainActivity extends AppCompatActivity {
         }
         switch (currentOperationEnum) {
             case DIVISION:
-                operation = "/";
+                operation = "÷";
                 break;
             case SUBTRACTION:
                 operation = "-";
@@ -348,7 +350,7 @@ public class MainActivity extends AppCompatActivity {
                 operation = "\\+";
                 break;
             case MULTIPLICATION:
-                operation = "\\*";
+                operation = "×";
                 break;
             default:
                 operation = "";
